@@ -37,6 +37,16 @@ import {
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import FeaturesPage from './FeaturesPage';
+import ApiReferencePage from './ApiReferencePage';
+import AboutPage from './AboutPage';
+import MedicalAdvisoryPage from './MedicalAdvisoryPage';
+import HelpCenterPage from './HelpCenterPage';
+import SafetyPrivacyPage from './SafetyPrivacyPage';
+import DocumentationPage from './DocumentationPage';
+import PrivacyPolicyPage from './PrivacyPolicyPage';
+import TermsOfServicePage from './TermsOfServicePage';
+import CompliancePage from './CompliancePage';
+import DisclaimerPage from './DisclaimerPage';
 
 // --- Scroll To Top Component ---
 const ScrollToTop = () => {
@@ -1535,25 +1545,25 @@ const Footer = () => {
       { name: 'Features', href: '/features' },
       { name: 'Technology', href: '#technology' },
       { name: 'Case Studies', href: '#use-cases' },
-      { name: 'API Reference', href: '#' },
+      { name: 'API Reference', href: '/api' },
     ],
     company: [
-      { name: 'About Us', href: '#' },
-      { name: 'Medical Advisory', href: '#' },
+      { name: 'About Us', href: '/about' },
+      { name: 'Medical Advisory', href: '/medical-advisory' },
       { name: 'Careers', href: '#' },
       { name: 'Contact', href: '#' },
     ],
     support: [
-      { name: 'Help Center', href: '#' },
-      { name: 'Safety & Privacy', href: '#' },
-      { name: 'Documentation', href: '#' },
+      { name: 'Help Center', href: '/help' },
+      { name: 'Safety & Privacy', href: '/safety-privacy' },
+      { name: 'Documentation', href: '/docs' },
       { name: 'Status', href: '#' },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '#' },
-      { name: 'Terms of Service', href: '#' },
-      { name: 'Compliance', href: '#' },
-      { name: 'Disclaimer', href: '#' },
+      { name: 'Privacy Policy', href: '/privacy-policy' },
+      { name: 'Terms of Service', href: '/terms-of-service' },
+      { name: 'Compliance', href: '/compliance' },
+      { name: 'Disclaimer', href: '/disclaimer' },
     ],
     social: [
       { name: 'LinkedIn', icon: <Linkedin className="w-5 h-5" />, href: '#' },
@@ -1613,7 +1623,11 @@ const Footer = () => {
             <ul className="space-y-4">
               {navigation.company.map((item) => (
                 <li key={item.name}>
-                  <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                  {item.href.startsWith('/') ? (
+                    <Link to={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</Link>
+                  ) : (
+                    <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1624,7 +1638,11 @@ const Footer = () => {
             <ul className="space-y-4">
               {navigation.support.map((item) => (
                 <li key={item.name}>
-                  <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                  {item.href.startsWith('/') ? (
+                    <Link to={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</Link>
+                  ) : (
+                    <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1635,7 +1653,11 @@ const Footer = () => {
             <ul className="space-y-4">
               {navigation.legal.map((item) => (
                 <li key={item.name}>
-                  <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                  {item.href.startsWith('/') ? (
+                    <Link to={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</Link>
+                  ) : (
+                    <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1735,6 +1757,50 @@ export default function App() {
               onOpenVideo={() => setIsVideoOpen(true)}
             />
           } />
+          <Route path="/api" element={<ApiReferencePage />} />
+          <Route path="/about" element={
+            <AboutPage 
+              onOpenScan={() => {
+                setSkipScanForm(false);
+                setIsScanOpen(true);
+              }}
+              onOpenEnterprise={() => setIsEnterpriseOpen(true)}
+            />
+          } />
+          <Route path="/medical-advisory" element={
+            <MedicalAdvisoryPage 
+              onOpenScan={() => {
+                setSkipScanForm(false);
+                setIsScanOpen(true);
+              }}
+              onOpenEnterprise={() => setIsEnterpriseOpen(true)}
+            />
+          } />
+          <Route path="/help" element={
+            <HelpCenterPage 
+              onOpenScan={() => {
+                setSkipScanForm(false);
+                setIsScanOpen(true);
+              }}
+            />
+          } />
+          <Route path="/safety-privacy" element={
+            <SafetyPrivacyPage 
+              onOpenScan={() => {
+                setSkipScanForm(false);
+                setIsScanOpen(true);
+              }}
+            />
+          } />
+          <Route path="/docs" element={<DocumentationPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+          <Route path="/compliance" element={
+            <CompliancePage 
+              onOpenEnterprise={() => setIsEnterpriseOpen(true)}
+            />
+          } />
+          <Route path="/disclaimer" element={<DisclaimerPage />} />
         </Routes>
         <Footer />
         
