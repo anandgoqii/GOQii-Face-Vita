@@ -22,7 +22,14 @@ import {
   Loader2,
   User,
   Mail,
-  Phone
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+  Sun,
+  Timer,
+  Info,
+  ChevronUp,
+  Sparkles
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -85,125 +92,383 @@ const RevealSection = ({ children, id, className = "" }: { children: React.React
   );
 };
 
-const ScanPopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [step, setStep] = useState(1);
+const ScanPopup = ({ isOpen, onClose, initialStep = 'form' }: { isOpen: boolean; onClose: () => void; initialStep?: string }) => {
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(initialStep); // form, setup, ready, scanning, results
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(initialStep);
+    }
+  }, [isOpen, initialStep]);
+
+  const [scanProgress, setScanProgress] = useState(0);
+  const [feedback, setFeedback] = useState('Detecting pulse...');
+
+  useEffect(() => {
+    if (!isOpen) {
+      setTimeout(() => {
+        setScanProgress(0);
+      }, 300);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (step === 'scanning') {
+      const interval = setInterval(() => {
+        setScanProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setTimeout(() => setStep('results'), 500);
+            return 100;
+          }
+          return prev + (100 / 30); // 30 seconds
+        });
+      }, 1000);
+
+      const feedbackInterval = setInterval(() => {
+        const messages = ['Detecting pulse...', 'Analyzing signals...', 'Almost done...', 'Stabilizing capture...', 'Refining metrics...'];
+        setFeedback(messages[Math.floor(Math.random() * messages.length)]);
+      }, 6000);
+
+      return () => {
+        clearInterval(interval);
+        clearInterval(feedbackInterval);
+      };
+    }
+  }, [step]);
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      setStep(2);
-    }, 1500);
+      setStep('setup');
+    }, 1200);
   };
+
+  const progressSteps = ['Setup', 'Ready', 'Scan', 'Results'];
+  const currentStepIndex = step === 'results' ? 3 : step === 'scanning' ? 2 : step === 'ready' ? 1 : step === 'setup' ? 0 : -1;
+
+  const results = [
+    { label: 'Health Score', value: '82/100', icon: <ShieldCheck className="w-5 h-5 text-emerald-500" />, desc: 'Excellent' },
+    { label: 'Stress Level', value: 'Low', icon: <Zap className="w-5 h-5 text-amber-500" />, desc: 'Balanced' },
+    { label: 'Heart Health', value: 'Prime', icon: <Heart className="w-5 h-5 text-rose-500" />, desc: 'Optimal' },
+    { label: 'Recovery', value: 'High', icon: <Timer className="w-5 h-5 text-blue-500" />, desc: 'Ready' },
+  ];
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
           />
+          
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-xl bg-white rounded-[32px] overflow-hidden shadow-2xl"
+            className={`relative w-full h-full md:h-auto md:max-w-2xl overflow-hidden shadow-2xl transition-all duration-500 ${
+              step === 'scanning' ? 'bg-black md:rounded-[40px]' : 'bg-white md:rounded-[40px]'
+            }`}
           >
-            <button 
-              onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 transition-colors z-20"
-            >
-              <X className="w-5 h-5 text-slate-400" />
-            </button>
+            {/* Minimal Header */}
+            <div className="absolute top-0 inset-x-0 p-8 flex justify-between items-center z-50">
+              <div className="flex gap-1.5">
+                {progressSteps.map((s, i) => (
+                  <div key={s} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 md:w-16 h-1 rounded-full transition-colors duration-500 ${
+                        i <= currentStepIndex 
+                          ? (step === 'scanning' ? 'bg-emerald-400' : 'bg-emerald-500') 
+                          : (step === 'scanning' ? 'bg-white/10' : 'bg-slate-100')
+                      }`} />
+                    </div>
+                    {currentStepIndex >= -1 && (
+                      <span className={`text-[8px] font-black uppercase tracking-widest transition-opacity duration-500 ${
+                        i === currentStepIndex 
+                          ? (step === 'scanning' ? 'text-emerald-400' : 'text-emerald-600') 
+                          : 'opacity-0'
+                      }`}>
+                        {s}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button 
+                onClick={onClose}
+                className={`p-2 rounded-full transition-colors ${
+                  step === 'scanning' ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <div className="flex flex-col lg:flex-row min-h-[500px]">
-              <div className="w-full p-8 lg:p-12">
-                {step === 1 ? (
-                  <div className="h-full flex flex-col">
-                    <div className="mb-8">
-                       <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6">
-                        <User className="w-6 h-6" />
+            <div className="pt-24 pb-12 px-8 md:px-12 h-full flex flex-col">
+              <AnimatePresence mode="wait">
+                {step === 'form' && (
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col py-8"
+                  >
+                    <div className="mb-10 text-center">
+                       <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6 mx-auto">
+                        <User className="w-8 h-8" />
                       </div>
-                      <h3 className="text-3xl font-bold text-slate-950 mb-2 font-display">Create Account</h3>
-                      <p className="text-slate-500 font-light">Register to start your clinical-grade health scan.</p>
+                      <h3 className="text-3xl font-bold text-slate-950 mb-3 font-display">Create Account</h3>
+                      <p className="text-slate-500 font-light max-w-sm mx-auto text-lg leading-relaxed">
+                        Register to start your clinical-grade health scan.
+                      </p>
                     </div>
 
-                    <form onSubmit={handleRegister} className="space-y-4">
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input 
-                          required
-                          type="text" 
-                          placeholder="Full Name" 
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm"
-                        />
+                    <form onSubmit={handleRegister} className="space-y-5 max-w-md mx-auto w-full">
+                      <div className="relative group">
+                        <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                        <input required type="text" placeholder="Full Name" className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-14 pr-5 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all text-sm" />
                       </div>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input 
-                          required
-                          type="email" 
-                          placeholder="Email Address" 
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm"
-                        />
-                      </div>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input 
-                          required
-                          type="tel" 
-                          placeholder="Phone Number" 
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm"
-                        />
+                      <div className="relative group">
+                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                        <input required type="email" placeholder="Email Address" className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-14 pr-5 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all text-sm" />
                       </div>
                       
                       <div className="pt-4">
-                        <Button className="w-full py-4 relative" disabled={loading}>
+                        <Button className="w-full py-5 relative" disabled={loading}>
                           {loading ? (
-                            <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                            <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                           ) : (
-                            <span className="flex items-center gap-2">Initialize Scan <ArrowRight className="w-4 h-4" /></span>
+                            <span className="flex items-center gap-3">Register and Continue <ArrowRight className="w-5 h-5" /></span>
                           )}
                         </Button>
                       </div>
                     </form>
 
-                    <p className="mt-8 text-[10px] text-slate-400 text-center uppercase tracking-widest leading-loose">
-                      By proceeding, you agree to our <br />
-                      <span className="text-slate-900 cursor-pointer hover:underline">Privacy Policy</span> & <span className="text-slate-900 cursor-pointer hover:underline">Medical Terms</span>
+                    <p className="mt-12 text-[10px] text-slate-300 text-center uppercase tracking-[0.2em] leading-loose">
+                      Trusted by medical practitioners worldwide
                     </p>
-                  </div>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-center">
-                    <motion.div
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="w-20 h-20 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-8 shadow-xl shadow-emerald-500/20"
-                    >
-                      <Camera className="w-10 h-10" />
-                    </motion.div>
-                    <h3 className="text-2xl font-bold text-slate-950 mb-3 font-display">Ready for Capture</h3>
-                    <p className="text-slate-500 font-light mb-8 max-w-xs">
-                      Please position your face within the frame and ensure you are in a well-lit environment.
-                    </p>
-                    <div className="w-full aspect-video bg-slate-950 rounded-2xl relative overflow-hidden mb-8 border border-slate-800">
-                       <div className="absolute inset-0 flex items-center justify-center">
-                         <div className="w-32 h-32 border-2 border-emerald-500/40 rounded-full animate-ping" />
-                         <Camera className="w-8 h-8 text-white/20" />
+                  </motion.div>
+                )}
+
+                {step === 'setup' && (
+                  <motion.div
+                    key="setup"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col py-8"
+                  >
+                    <div className="text-center mb-12">
+                      <h3 className="text-4xl font-bold text-slate-950 mb-4 font-display italic">Let’s get you ready</h3>
+                      <p className="text-slate-500 text-lg font-light italic">This will take just 30 seconds</p>
+                    </div>
+
+                    <div className="space-y-8 max-w-sm mx-auto mb-16">
+                      {[
+                        { icon: <Sun className="w-6 h-6 text-amber-500" />, title: 'Good lighting', desc: 'Make sure your face is clearly visible' },
+                        { icon: <Smartphone className="w-6 h-6 text-blue-500" />, title: 'Keep phone at eye level', desc: 'Hold your device steady' },
+                        { icon: <Activity className="w-6 h-6 text-rose-500" />, title: 'Stay still', desc: 'Avoid talking or moving' }
+                      ].map((item, i) => (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          key={i} 
+                          className="flex items-start gap-6"
+                        >
+                          <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0">
+                            {item.icon}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-950 text-lg mb-1">{item.title}</h4>
+                            <p className="text-slate-500 text-sm font-light leading-relaxed">{item.desc}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center mt-auto">
+                      <Button className="px-16" onClick={() => setStep('ready')}>Continue</Button>
+                      <Button variant="ghost" className="text-slate-400" onClick={() => setStep('ready')}>Skip</Button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {step === 'ready' && (
+                  <motion.div
+                    key="ready"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.05 }}
+                    className="flex flex-col py-8 text-center"
+                  >
+                    <div className="mb-12">
+                      <h3 className="text-4xl font-bold text-slate-950 mb-4 font-display">You’re all set to scan</h3>
+                      <p className="text-slate-500 text-lg font-light">Position your face within the frame</p>
+                    </div>
+
+                    <div className="relative w-full aspect-square max-w-[280px] mx-auto mb-16">
+                      <div className="absolute inset-0 border-2 border-dashed border-emerald-500/30 rounded-full animate-[spin_20s_linear_infinite]" />
+                      <div className="absolute inset-4 border border-emerald-500/20 rounded-full blur-sm" />
+                      
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="relative w-48 h-64 bg-slate-100 rounded-[60px] border-4 border-white shadow-2xl flex items-center justify-center overflow-hidden">
+                           <div className="absolute top-4 w-12 h-1 bg-slate-300 rounded-full" />
+                           <div className="w-32 h-44 border-2 border-emerald-500/40 rounded-[40px] flex items-center justify-center relative">
+                              <Camera className="w-8 h-8 text-emerald-500/20" />
+                              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-emerald-500" />
+                              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-emerald-500" />
+                              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-emerald-500" />
+                              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-emerald-500" />
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button className="w-full max-w-sm mx-auto py-5" onClick={() => setStep('scanning')}>
+                      Start Scan Now
+                    </Button>
+                  </motion.div>
+                )}
+
+                {step === 'scanning' && (
+                  <motion.div
+                    key="scanning"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 flex flex-col items-center justify-center bg-black"
+                  >
+                    {/* Face Guide */}
+                    <div className="relative w-72 h-[420px]">
+                      {/* Guides */}
+                      <div className="absolute inset-0 border-2 border-emerald-500/20 rounded-[120px]" />
+                      <div className="absolute inset-[-2px] border-[3px] border-emerald-500/40 rounded-[122px] animate-pulse" />
+                      
+                      {/* Scan Line */}
+                      <motion.div 
+                        animate={{ top: ['10%', '90%'] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_20px_rgba(52,211,153,0.8)] z-10"
+                      />
+
+                      {/* Corner Accents */}
+                      <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-emerald-400 rounded-tl-[100px]" />
+                      <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-emerald-400 rounded-tr-[100px]" />
+                      <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-emerald-400 rounded-bl-[100px]" />
+                      <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-emerald-400 rounded-br-[100px]" />
+
+                      {/* Camera simulation */}
+                      <div className="absolute inset-4 rounded-[100px] overflow-hidden bg-slate-900/50 flex flex-col items-center justify-center">
+                         <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=640&auto=format&fit=crop')] bg-cover bg-center grayscale opacity-60" />
+                      </div>
+                    </div>
+
+                    {/* Progress Circle */}
+                    <div className="mt-12 relative flex items-center justify-center w-32 h-32">
+                       <svg className="w-full h-full -rotate-90">
+                         <circle cx="64" cy="64" r="58" stroke="rgba(255,255,255,0.1)" strokeWidth="4" fill="none" />
+                         <motion.circle 
+                          cx="64" cy="64" r="58" 
+                          stroke="rgb(52, 211, 153)" 
+                          strokeWidth="4" fill="none" 
+                          strokeDasharray="364.4"
+                          animate={{ strokeDashoffset: 364.4 - (364.4 * scanProgress / 100) }}
+                          transition={{ duration: 1, ease: "linear" }}
+                        />
+                       </svg>
+                       <div className="absolute font-mono text-xl font-bold text-white">
+                         {Math.round(30 - (30 * scanProgress / 100))}s
                        </div>
                     </div>
-                    <Button className="w-full" onClick={onClose}>
-                      Start 30s Scan
-                    </Button>
-                  </div>
+
+                    <div className="mt-8 text-center space-y-2">
+                       <p className="text-white font-medium text-lg flex items-center justify-center gap-3">
+                          {feedback}
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                       </p>
+                       <div className="flex gap-6 items-center">
+                         <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                           <Sun className="w-3 h-3 text-emerald-400" /> Lighting: Good
+                         </div>
+                         <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                           <Activity className="w-3 h-3 text-emerald-400" /> Alignment: Centered
+                         </div>
+                       </div>
+                    </div>
+                  </motion.div>
                 )}
-              </div>
+
+                {step === 'results' && (
+                  <motion.div
+                    key="results"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex flex-col py-4"
+                  >
+                    <div className="text-center mb-10">
+                      <h3 className="text-4xl font-bold text-slate-950 mb-3 font-display">Here’s your health snapshot</h3>
+                      <p className="text-slate-500 italic max-w-sm mx-auto">Your stress levels are slightly elevated. Improving sleep and hydration can help.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-10">
+                       {results.map((r, i) => (
+                         <div key={i} className="bg-slate-50 border border-slate-100 p-5 rounded-[24px] group hover:border-emerald-200 transition-all">
+                            <div className="flex items-center justify-between mb-4">
+                               <div className="p-2 rounded-xl bg-white shadow-sm">{r.icon}</div>
+                               <span className="text-[10px] uppercase font-black text-emerald-600 tracking-widest leading-none">{r.desc}</span>
+                            </div>
+                            <div className="text-slate-400 text-[10px] uppercase font-bold tracking-widest mb-1">{r.label}</div>
+                            <div className="text-2xl font-bold text-slate-950 font-display">{r.value}</div>
+                         </div>
+                       ))}
+                    </div>
+
+                    {/* GOQii Advantage Section */}
+                    <div className="bg-slate-950 rounded-[32px] p-8 mb-10 text-white relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/20 blur-[60px] rounded-full translate-x-1/2 -translate-y-1/2" />
+                       <div className="relative z-10">
+                          <div className="flex items-center gap-3 mb-6">
+                             <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 text-white" />
+                             </div>
+                             <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">Improve your health</span>
+                          </div>
+                          <h4 className="text-2xl font-bold mb-6 font-display leading-tight">Personalized <span className="text-emerald-400 italic font-medium">Daily Health Plan</span> tailored for your recovery.</h4>
+                          
+                          <div className="space-y-4 mb-8">
+                             {[
+                               { text: 'AI Coach guidance', icon: <Brain className="w-4 h-4" /> },
+                               { text: 'Lifestyle optimization', icon: <Activity className="w-4 h-4" /> }
+                             ].map((item, i) => (
+                               <div key={i} className="flex items-center gap-3 text-white/60 text-sm">
+                                  <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                  {item.text}
+                               </div>
+                             ))}
+                          </div>
+
+                          <Button className="w-full bg-emerald-500 hover:bg-emerald-400 border-none text-slate-950">
+                             Start Improving Now
+                          </Button>
+                       </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4">
+                       <Button className="flex-1">Get Personalized Plan</Button>
+                       <Button variant="secondary" onClick={() => setStep('setup')}>Scan Again</Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         </div>
@@ -249,19 +514,26 @@ const VideoPopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
   );
 };
 
-const EnterprisePopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const EnterprisePopup = ({ isOpen, onClose, onOpenScan }: { isOpen: boolean; onClose: () => void; onOpenScan: () => void }) => {
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setTimeout(() => setStep(1), 300);
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      setLoading(true);
       setLoading(false);
-      setSubmitted(true);
+      setStep(2);
     }, 1500);
   };
+
+  const calendarDays = Array.from({ length: 30 }, (_, i) => i + 1);
 
   return (
     <AnimatePresence>
@@ -278,7 +550,7 @@ const EnterprisePopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-xl bg-white rounded-[32px] overflow-hidden shadow-2xl"
+            className={`relative w-full transition-all duration-500 ease-in-out ${step === 1 ? 'max-w-xl' : 'max-w-6xl'} bg-white rounded-[32px] overflow-hidden shadow-2xl`}
           >
             <button 
               onClick={onClose}
@@ -287,68 +559,162 @@ const EnterprisePopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
               <X className="w-5 h-5 text-slate-400" />
             </button>
 
-            <div className="p-8 lg:p-12">
-              {!submitted ? (
-                <div className="h-full flex flex-col">
-                  <div className="mb-8">
-                     <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center mb-6">
-                      <Globe className="w-6 h-6" />
+            {step === 1 ? (
+              <div className="p-8 lg:p-12">
+                <div className="mb-8">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center mb-6">
+                    <Globe className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-slate-950 mb-2 font-display">Enterprise Inquiry</h3>
+                  <p className="text-slate-500 font-light">Scale transdermal health assessment across your organization.</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input required type="text" placeholder="First Name" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
                     </div>
-                    <h3 className="text-3xl font-bold text-slate-950 mb-2 font-display">Enterprise Inquiry</h3>
-                    <p className="text-slate-500 font-light">Scale transdermal health assessment across your organization.</p>
+                    <div className="relative">
+                      <input required type="text" placeholder="Last Name" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 px-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
+                    </div>
+                  </div>
+                  
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input required type="email" placeholder="Work Email" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
                   </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input required type="text" placeholder="First Name" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
-                      </div>
-                      <div className="relative">
-                        <input required type="text" placeholder="Last Name" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 px-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
-                      </div>
-                    </div>
-                    
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input required type="email" placeholder="Work Email" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
-                    </div>
-
-                    <div className="relative">
-                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input required type="text" placeholder="Company Name" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
-                    </div>
-
-                    <div className="relative">
-                      <Users className="absolute left-4 top-4 w-4 h-4 text-slate-400" />
-                      <select required className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm appearance-none">
-                        <option value="">Expected Volume (Scans/Mo)</option>
-                        <option value="<1000">&lt; 1,000</option>
-                        <option value="1000-10000">1,000 - 10,000</option>
-                        <option value="10000+">10,000+</option>
-                      </select>
-                    </div>
-                    
-                    <div className="pt-4">
-                      <Button className="w-full py-4 bg-blue-600 hover:bg-blue-700" disabled={loading}>
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Request Partnership"}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              ) : (
-                <div className="py-12 text-center">
-                  <div className="w-20 h-20 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-8 mx-auto shadow-xl shadow-emerald-500/20">
-                    <CheckCircle2 className="w-10 h-10" />
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input required type="text" placeholder="Company Name" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm" />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-950 mb-3 font-display">Inquiry Received</h3>
-                  <p className="text-slate-500 font-light mb-8 max-w-sm mx-auto">
-                    An enterprise specialist will reach out within 24 hours to discuss your organizational health strategy.
-                  </p>
-                  <Button className="w-full" onClick={onClose}>Close</Button>
+
+                  <div className="relative">
+                    <Users className="absolute left-4 top-4 w-4 h-4 text-slate-400" />
+                    <select required className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm appearance-none">
+                      <option value="">Expected Volume (Scans/Mo)</option>
+                      <option value="<1000">&lt; 1,000</option>
+                      <option value="1000-10000">1,000 - 10,000</option>
+                      <option value="10000+">10,000+</option>
+                    </select>
+                  </div>
+                  
+                  <div className="pt-4">
+                    <Button className="w-full py-4 bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                      {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Request Partnership"}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className="h-full flex flex-col">
+                {/* Step Header */}
+                <div className="p-12 pb-0 flex flex-col md:flex-row justify-between items-start gap-8">
+                  <div className="space-y-4">
+                    <div className="text-emerald-500 font-bold text-xs uppercase tracking-[0.2em]">Contact us</div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight max-w-md font-display">
+                      Want to understand the <span className="text-emerald-500">technology?</span> <br />
+                      Schedule a meeting with us
+                    </h2>
+                  </div>
+
+                  {/* Stepper */}
+                  <div className="flex gap-10">
+                    <div className="flex flex-col gap-3">
+                      <span className="text-[10px] text-slate-300 font-black uppercase tracking-[0.2em]">Step 1</span>
+                      <span className="text-[13px] font-bold text-slate-400">Contact info</span>
+                      <div className="h-[3px] bg-emerald-500 w-full rounded-full" />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Step 2</span>
+                      <div className="space-y-0.5">
+                        <div className="text-[13px] font-bold text-slate-900 leading-none">Schedule a call</div>
+                        <div className="text-[10px] font-bold text-slate-400 capitalize">(optional)</div>
+                      </div>
+                      <div className="h-[4px] bg-slate-900 w-full rounded-full" />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <span className="text-[10px] text-slate-300 font-black uppercase tracking-[0.2em]">Step 3</span>
+                      <span className="text-[13px] font-bold text-slate-300">Scan yourself</span>
+                      <div className="h-[3px] bg-emerald-100 w-full rounded-full" />
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* Content Grid */}
+                <div className="grid md:grid-cols-2 gap-8 p-12">
+                  <div className="bg-slate-50/50 rounded-[40px] p-8 min-h-[500px] relative overflow-hidden flex flex-col items-center">
+                    <div className="w-full max-w-[320px] bg-slate-950 rounded-[32px] p-8 text-white shadow-2xl relative z-10">
+                      <div className="flex flex-col items-center mb-8">
+                        <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
+                          <Activity className="w-6 h-6 text-brand-primary" />
+                        </div>
+                        <div className="text-sm font-bold tracking-tight">Meet with Shen AI</div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center mb-8 px-2">
+                        <ChevronLeft className="w-4 h-4 opacity-40 cursor-pointer hover:opacity-100 transition-opacity" />
+                        <div className="text-xs font-bold uppercase tracking-widest">April 2026</div>
+                        <ChevronRight className="w-4 h-4 opacity-40 cursor-pointer hover:opacity-100 transition-opacity" />
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-y-5 gap-x-2 text-[8px] font-black text-center mb-4">
+                        {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
+                          <div key={d} className="opacity-30 tracking-tighter">{d}</div>
+                        ))}
+                        {Array.from({ length: 3 }).map((_, i) => <div key={`empty-${i}`} />)}
+                        {calendarDays.map(d => (
+                          <div key={d} className={`p-2 rounded-xl text-[10px] transition-all cursor-pointer ${d === 23 ? 'bg-brand-primary text-slate-950 font-black scale-110 shadow-lg shadow-brand-primary/20' : d === 24 || d === 25 ? 'bg-white/10 text-white' : 'hover:bg-white/5 opacity-60 hover:opacity-100'}`}>
+                            {d}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 p-12 bg-gradient-to-t from-white via-white/80 to-transparent pt-32 text-center pointer-events-none">
+                       {/* Background for buttons? No need for too much detail here. */}
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-400 rounded-[40px] p-12 relative overflow-hidden group">
+                    <div className="relative z-20 h-full flex flex-col justify-between max-w-xs">
+                      <div>
+                        <h3 className="text-4xl md:text-5xl font-bold text-white mb-8 tracking-tight font-display">Proceed to <br />take a scan</h3>
+                        <p className="text-white/90 text-sm font-medium leading-relaxed mb-10">
+                          Measure health markers like blood pressure, BMI, heart rate (HR), heart rate variability (HRV) and more in just 30 seconds through face scan.
+                        </p>
+                        <motion.button 
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            onClose();
+                            onOpenScan();
+                          }}
+                          className="bg-white text-emerald-600 px-8 py-4 rounded-xl font-bold text-sm shadow-xl shadow-black/10 hover:shadow-2xl transition-all flex items-center gap-3 cursor-pointer"
+                        >
+                          Proceed to scan
+                          <ArrowRight className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    </div>
+
+                    {/* Hand with Phone Mockup Placeholder */}
+                    <div className="absolute -bottom-10 -right-10 w-[70%] group-hover:scale-105 transition-transform duration-[2s] rotate-[-5deg]">
+                       <div className="relative">
+                          <img 
+                            src="https://cdn.prod.website-files.com/680280c18df8e68403545b30/680280c18df8e68403545bc2_Image.webp" 
+                            alt="Scan Simulation" 
+                            className="w-full rounded-3xl shadow-3xl brightness-110"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-0 border-[6px] border-white/20 rounded-3xl" />
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       )}
@@ -1121,32 +1487,68 @@ export default function App() {
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [isEnterpriseOpen, setIsEnterpriseOpen] = useState(false);
+  const [skipScanForm, setSkipScanForm] = useState(false);
 
   return (
     <div className="font-sans selection:bg-brand-primary/30 selection:text-slate-950">
-      <Navbar onOpenScan={() => setIsScanOpen(true)} />
+      <Navbar onOpenScan={() => {
+        setSkipScanForm(false);
+        setIsScanOpen(true);
+      }} />
       <main>
-        <Hero onOpenScan={() => setIsScanOpen(true)} onOpenVideo={() => setIsVideoOpen(true)} />
+        <Hero onOpenScan={() => {
+          setSkipScanForm(false);
+          setIsScanOpen(true);
+        }} onOpenVideo={() => setIsVideoOpen(true)} />
         <ScienceFeatures />
-        <HowItWorks onOpenScan={() => setIsScanOpen(true)} />
-        <MetricsGrid onOpenScan={() => setIsScanOpen(true)} />
-        <AIVisualization onOpenScan={() => setIsScanOpen(true)} />
+        <HowItWorks onOpenScan={() => {
+          setSkipScanForm(false);
+          setIsScanOpen(true);
+        }} />
+        <MetricsGrid onOpenScan={() => {
+          setSkipScanForm(false);
+          setIsScanOpen(true);
+        }} />
+        <AIVisualization onOpenScan={() => {
+          setSkipScanForm(false);
+          setIsScanOpen(true);
+        }} />
         <Journey />
-        <ResultsSummary onOpenScan={() => setIsScanOpen(true)} />
+        <ResultsSummary onOpenScan={() => {
+          setSkipScanForm(false);
+          setIsScanOpen(true);
+        }} />
         <UseCases 
-          onOpenScan={() => setIsScanOpen(true)} 
+          onOpenScan={() => {
+            setSkipScanForm(false);
+            setIsScanOpen(true);
+          }} 
           onOpenEnterprise={() => setIsEnterpriseOpen(true)} 
         />
         <FinalCTA 
-          onOpenScan={() => setIsScanOpen(true)} 
+          onOpenScan={() => {
+            setSkipScanForm(false);
+            setIsScanOpen(true);
+          }} 
           onOpenEnterprise={() => setIsEnterpriseOpen(true)} 
         />
       </main>
       <Footer />
       
-      <ScanPopup isOpen={isScanOpen} onClose={() => setIsScanOpen(false)} />
+      <ScanPopup 
+        isOpen={isScanOpen} 
+        onClose={() => setIsScanOpen(false)} 
+        initialStep={skipScanForm ? 'setup' : 'form'}
+      />
       <VideoPopup isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
-      <EnterprisePopup isOpen={isEnterpriseOpen} onClose={() => setIsEnterpriseOpen(false)} />
+      <EnterprisePopup 
+        isOpen={isEnterpriseOpen} 
+        onClose={() => setIsEnterpriseOpen(false)} 
+        onOpenScan={() => {
+          setSkipScanForm(true);
+          setIsScanOpen(true);
+        }}
+      />
       
       {/* Global Background Accents */}
       <div className="fixed inset-0 pointer-events-none -z-50 overflow-hidden bg-white">
