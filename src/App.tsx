@@ -890,9 +890,6 @@ const Hero = ({ onOpenScan, onOpenVideo }: { onOpenScan: () => void; onOpenVideo
               {/* Facial Mesh Simulation Center */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 pointer-events-none">
                 <div className="w-full h-full border border-emerald-400/20 rounded-full animate-ping [animation-duration:4s]" />
-                <div className="absolute inset-0 flex items-center justify-center opacity-40">
-                  <Activity className="w-32 h-32 text-emerald-400/30" />
-                </div>
               </div>
 
               {/* Metric Overlays on Scan */}
