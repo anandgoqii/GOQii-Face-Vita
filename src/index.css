@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Roboto", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-obsidian: #020617;
+  --color-brand-primary: #00f5a0;
+  --color-brand-secondary: #00d9f5;
+  --color-brand-mint: #00f5a0;
+  --color-aura-green: #dcfce7;
+  --color-aura-green-text: #166534;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-slate-900 antialiased selection:bg-brand-primary/30 selection:text-slate-900;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight text-slate-950 font-bold;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl border border-slate-200/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)];
+  }
+  
+  .glass-dark {
+    @apply bg-slate-900/40 backdrop-blur-2xl border border-white/10;
+  }
+
+  .text-glow-primary {
+    text-shadow: 0 0 20px rgba(0, 245, 160, 0.4);
+  }
+
+  .bg-mesh {
+    background-image: 
+      radial-gradient(at 100% 0%, rgba(0, 245, 160, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(0, 217, 245, 0.05) 0px, transparent 50%);
+  }
+
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-300 active:scale-[0.98];
+  }
+
+  .btn-premium::after {
+    content: '';
+    @apply absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 ease-out;
+  }
+
+  .btn-premium:hover::after {
+    @apply translate-y-0;
+  }
+}
+
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+.animate-scan {
+  animation: scan 3s ease-in-out infinite;
+}

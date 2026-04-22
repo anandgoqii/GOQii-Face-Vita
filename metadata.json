@@ -1,0 +1,6 @@
+{
+  "name": "FaceVital AI | Your Face is Your Health Dashboard",
+  "description": "Futuristic AI-powered face scanning health platform for real-time bio-signal analysis.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["AI Health Scanning", "Real-time Bio-signals", "Predictive Analytics"]
+}
