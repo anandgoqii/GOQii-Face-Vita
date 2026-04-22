@@ -29,9 +29,23 @@ import {
   Timer,
   Info,
   ChevronUp,
-  Sparkles
+  Sparkles,
+  Linkedin,
+  Twitter,
+  Github
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import FeaturesPage from './FeaturesPage';
+
+// --- Scroll To Top Component ---
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
 // --- Shared Components ---
 
@@ -743,12 +757,14 @@ const Navbar = ({ onOpenScan }: { onOpenScan: () => void }) => {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img 
-            src="https://appcdn.goqii.com/storeimg/72957_1776847348.png" 
-            alt="FaceVital AI" 
-            className="h-9 w-auto" 
-            referrerPolicy="no-referrer"
-          />
+          <Link to="/">
+            <img 
+              src="https://appcdn.goqii.com/storeimg/72957_1776847348.png" 
+              alt="FaceVital AI" 
+              className="h-9 w-auto" 
+              referrerPolicy="no-referrer"
+            />
+          </Link>
         </div>
         
         <div className="hidden md:flex items-center gap-10 text-sm font-medium text-slate-600">
@@ -851,7 +867,7 @@ const Hero = ({ onOpenScan, onOpenVideo }: { onOpenScan: () => void; onOpenVideo
             className="relative"
           >
             {/* Camera Frame / Scanning Graphic */}
-            <div className="relative rounded-[48px] overflow-hidden bg-slate-950 border-[12px] border-white shadow-[0_40px_100px_rgba(0,0,0,0.15)] aspect-[4/5] max-w-[480px] mx-auto group">
+            <div className="relative rounded-[48px] overflow-hidden bg-slate-950 border-[12px] border-white shadow-[0_40px_100px_rgba(0,0,0,0.15)] aspect-[4/5] max-w-[960px] mx-auto group">
               {/* Corner Brackets */}
               <div className="absolute top-10 left-10 w-12 h-12 border-t-2 border-l-2 border-brand-primary/40 rounded-tl-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute top-10 right-10 w-12 h-12 border-t-2 border-r-2 border-brand-primary/40 rounded-tr-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
@@ -996,6 +1012,56 @@ const ScienceFeatures = () => {
         </div>
       </div>
     </RevealSection>
+  );
+};
+
+const Certifications = () => {
+  const logos = [
+    "https://appcdn.goqii.com/storeimg/12263_1776860178.png",
+    "https://appcdn.goqii.com/storeimg/97197_1776860202.png",
+    "https://appcdn.goqii.com/storeimg/47286_1776860214.png"
+  ];
+
+  return (
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Subtle separator animation */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-100 to-transparent" />
+      
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 mb-4">
+            <ShieldCheck className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Medical Grade</span>
+          </div>
+          <h2 className="text-3xl font-bold text-slate-950 mb-3 font-display">Clinically Validated</h2>
+          <p className="text-slate-500 text-base font-light leading-relaxed max-w-2xl mx-auto">
+            Our algorithms are tested against gold-standard clinical equipment to ensure medical-grade accuracy and reliable results.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-12 md:gap-20 lg:gap-32">
+          {logos.map((logo, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.6 }}
+              className="relative group"
+            >
+              <img
+                src={logo}
+                alt={`Certification logo ${i + 1}`}
+                className="h-16 md:h-24 w-auto object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 hover:scale-105"
+                referrerPolicy="no-referrer"
+              />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-100 to-transparent" />
+    </section>
   );
 };
 
@@ -1464,21 +1530,178 @@ const FinalCTA = ({ onOpenScan, onOpenEnterprise }: { onOpenScan: () => void; on
 };
 
 const Footer = () => {
+  const navigation = {
+    product: [
+      { name: 'Features', href: '/features' },
+      { name: 'Technology', href: '#technology' },
+      { name: 'Case Studies', href: '#use-cases' },
+      { name: 'API Reference', href: '#' },
+    ],
+    company: [
+      { name: 'About Us', href: '#' },
+      { name: 'Medical Advisory', href: '#' },
+      { name: 'Careers', href: '#' },
+      { name: 'Contact', href: '#' },
+    ],
+    support: [
+      { name: 'Help Center', href: '#' },
+      { name: 'Safety & Privacy', href: '#' },
+      { name: 'Documentation', href: '#' },
+      { name: 'Status', href: '#' },
+    ],
+    legal: [
+      { name: 'Privacy Policy', href: '#' },
+      { name: 'Terms of Service', href: '#' },
+      { name: 'Compliance', href: '#' },
+      { name: 'Disclaimer', href: '#' },
+    ],
+    social: [
+      { name: 'LinkedIn', icon: <Linkedin className="w-5 h-5" />, href: '#' },
+      { name: 'Twitter', icon: <Twitter className="w-5 h-5" />, href: '#' },
+      { name: 'GitHub', icon: <Github className="w-5 h-5" />, href: '#' },
+    ]
+  };
+
   return (
-    <footer className="py-12 px-6 bg-white border-t border-slate-100">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-        <p className="text-[10px] uppercase font-mono text-slate-400 tracking-widest">
-          © 2026 FaceVital AI Technologies. All rights reserved. 
-        </p>
-        <div className="flex gap-8 text-[10px] uppercase font-mono text-slate-400 tracking-widest">
-          <a href="#" className="hover:text-slate-900">Privacy Policy</a>
-          <a href="#" className="hover:text-slate-900">Terms of Service</a>
-          <a href="#" className="hover:text-slate-900">Security</a>
+    <footer className="bg-white text-slate-950 pt-24 pb-12 border-t border-slate-100 overflow-hidden relative">
+      {/* Background Accent */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent" />
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-12 mb-20">
+          <div className="col-span-2 md:col-span-3 lg:col-span-2">
+            <div className="flex items-center gap-3 mb-8">
+              <Link to="/">
+                <img 
+                  src="https://appcdn.goqii.com/storeimg/72957_1776847348.png" 
+                  alt="FaceVital AI" 
+                  className="h-10 w-auto" 
+                  referrerPolicy="no-referrer"
+                />
+              </Link>
+            </div>
+            <p className="text-slate-500 text-sm leading-relaxed max-w-xs mb-8 font-light">
+              Pioneering the future of non-invasive health monitoring using advanced computer vision and medical-grade AI.
+            </p>
+            <div className="flex gap-4">
+              {navigation.social.map((s) => (
+                <a key={s.name} href={s.href} className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-950 hover:bg-slate-100 transition-all">
+                  {s.icon}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-950 mb-6">Product</h4>
+            <ul className="space-y-4">
+              {navigation.product.map((item) => (
+                <li key={item.name}>
+                  {item.href.startsWith('/') ? (
+                    <Link to={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</Link>
+                  ) : (
+                    <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-950 mb-6">Company</h4>
+            <ul className="space-y-4">
+              {navigation.company.map((item) => (
+                <li key={item.name}>
+                  <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-950 mb-6">Support</h4>
+            <ul className="space-y-4">
+              {navigation.support.map((item) => (
+                <li key={item.name}>
+                  <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-950 mb-6">Legal</h4>
+            <ul className="space-y-4">
+              {navigation.legal.map((item) => (
+                <li key={item.name}>
+                  <a href={item.href} className="text-slate-500 hover:text-emerald-600 text-sm font-light transition-colors">{item.name}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-slate-400 text-xs font-mono tracking-wider">
+            © 2026 FACE VITAL AI TECHNOLOGIES. BUILT FOR GLOBAL IMPACT.
+          </p>
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
+            <Globe className="w-4 h-4" />
+            <span>Serving 14+ regions globally</span>
+          </div>
         </div>
       </div>
     </footer>
   );
 };
+
+const LandingPage = ({ 
+  setIsScanOpen, 
+  setSkipScanForm, 
+  setIsVideoOpen, 
+  setIsEnterpriseOpen 
+}: any) => (
+  <main>
+    <Hero onOpenScan={() => {
+      setSkipScanForm(false);
+      setIsScanOpen(true);
+    }} onOpenVideo={() => setIsVideoOpen(true)} />
+    <ScienceFeatures />
+    <Certifications />
+    <HowItWorks onOpenScan={() => {
+      setSkipScanForm(false);
+      setIsScanOpen(true);
+    }} />
+    <MetricsGrid onOpenScan={() => {
+      setSkipScanForm(false);
+      setIsScanOpen(true);
+    }} />
+    <AIVisualization onOpenScan={() => {
+      setSkipScanForm(false);
+      setIsScanOpen(true);
+    }} />
+    <Journey />
+    <ResultsSummary onOpenScan={() => {
+      setSkipScanForm(false);
+      setIsScanOpen(true);
+    }} />
+    <UseCases 
+      onOpenScan={() => {
+        setSkipScanForm(false);
+        setIsScanOpen(true);
+      }} 
+      onOpenEnterprise={() => setIsEnterpriseOpen(true)} 
+    />
+    <FinalCTA 
+      onOpenScan={() => {
+        setSkipScanForm(false);
+        setIsScanOpen(true);
+      }} 
+      onOpenEnterprise={() => setIsEnterpriseOpen(true)} 
+    />
+  </main>
+);
 
 export default function App() {
   const [isScanOpen, setIsScanOpen] = useState(false);
@@ -1487,71 +1710,55 @@ export default function App() {
   const [skipScanForm, setSkipScanForm] = useState(false);
 
   return (
-    <div className="font-sans selection:bg-brand-primary/30 selection:text-slate-950">
-      <Navbar onOpenScan={() => {
-        setSkipScanForm(false);
-        setIsScanOpen(true);
-      }} />
-      <main>
-        <Hero onOpenScan={() => {
-          setSkipScanForm(false);
-          setIsScanOpen(true);
-        }} onOpenVideo={() => setIsVideoOpen(true)} />
-        <ScienceFeatures />
-        <HowItWorks onOpenScan={() => {
+    <BrowserRouter>
+      <ScrollToTop />
+      <div className="font-sans selection:bg-brand-primary/30 selection:text-slate-950">
+        <Navbar onOpenScan={() => {
           setSkipScanForm(false);
           setIsScanOpen(true);
         }} />
-        <MetricsGrid onOpenScan={() => {
-          setSkipScanForm(false);
-          setIsScanOpen(true);
-        }} />
-        <AIVisualization onOpenScan={() => {
-          setSkipScanForm(false);
-          setIsScanOpen(true);
-        }} />
-        <Journey />
-        <ResultsSummary onOpenScan={() => {
-          setSkipScanForm(false);
-          setIsScanOpen(true);
-        }} />
-        <UseCases 
-          onOpenScan={() => {
-            setSkipScanForm(false);
-            setIsScanOpen(true);
-          }} 
-          onOpenEnterprise={() => setIsEnterpriseOpen(true)} 
+        <Routes>
+          <Route path="/" element={
+            <LandingPage 
+              setIsScanOpen={setIsScanOpen}
+              setSkipScanForm={setSkipScanForm}
+              setIsVideoOpen={setIsVideoOpen}
+              setIsEnterpriseOpen={setIsEnterpriseOpen}
+            />
+          } />
+          <Route path="/features" element={
+            <FeaturesPage 
+              onOpenScan={() => {
+                setSkipScanForm(false);
+                setIsScanOpen(true);
+              }}
+              onOpenVideo={() => setIsVideoOpen(true)}
+            />
+          } />
+        </Routes>
+        <Footer />
+        
+        <ScanPopup 
+          isOpen={isScanOpen} 
+          onClose={() => setIsScanOpen(false)} 
+          initialStep={skipScanForm ? 'setup' : 'form'}
         />
-        <FinalCTA 
+        <VideoPopup isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
+        <EnterprisePopup 
+          isOpen={isEnterpriseOpen} 
+          onClose={() => setIsEnterpriseOpen(false)} 
           onOpenScan={() => {
-            setSkipScanForm(false);
+            setSkipScanForm(true);
             setIsScanOpen(true);
-          }} 
-          onOpenEnterprise={() => setIsEnterpriseOpen(true)} 
+          }}
         />
-      </main>
-      <Footer />
-      
-      <ScanPopup 
-        isOpen={isScanOpen} 
-        onClose={() => setIsScanOpen(false)} 
-        initialStep={skipScanForm ? 'setup' : 'form'}
-      />
-      <VideoPopup isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
-      <EnterprisePopup 
-        isOpen={isEnterpriseOpen} 
-        onClose={() => setIsEnterpriseOpen(false)} 
-        onOpenScan={() => {
-          setSkipScanForm(true);
-          setIsScanOpen(true);
-        }}
-      />
-      
-      {/* Global Background Accents */}
-      <div className="fixed inset-0 pointer-events-none -z-50 overflow-hidden bg-white">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-primary/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-secondary/5 blur-[150px] rounded-full" />
+        
+        {/* Global Background Accents */}
+        <div className="fixed inset-0 pointer-events-none -z-50 overflow-hidden bg-white">
+          <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-primary/5 blur-[120px] rounded-full" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-secondary/5 blur-[150px] rounded-full" />
+        </div>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
